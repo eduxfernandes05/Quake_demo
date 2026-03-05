@@ -153,6 +153,6 @@ void IN_InjectMouseEvent(int dx, int dy, int buttons)
 
 	mouse_queue[mouse_queue_head].dx = dx;
 	mouse_queue[mouse_queue_head].dy = dy;
-	mouse_queue[mouse_queue_head].buttons = buttons;
+	mouse_queue[mouse_queue_head].buttons = buttons; /* reserved for future use */
 	mouse_queue_head = next;
 }

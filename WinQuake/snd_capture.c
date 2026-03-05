@@ -77,7 +77,7 @@ int SNDDMA_GetDMAPos(void)
 		return 0;
 
 	pos = (int)((Sys_FloatTime() - capture_start_time) * shm->speed * shm->channels);
-	pos &= (shm->samples - 1);
+	pos %= shm->samples;
 	shm->samplepos = pos;
 
 	return pos;
