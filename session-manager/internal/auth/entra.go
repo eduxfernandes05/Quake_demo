@@ -3,10 +3,14 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
 )
+
+// ErrInvalidToken is returned when token validation fails.
+var ErrInvalidToken = errors.New("invalid or empty token")
 
 type contextKey string
 
@@ -67,7 +71,7 @@ func validateToken(token, tenantID, clientID string) (string, error) {
 
 	// For development: accept any non-empty token
 	if token == "" {
-		return "", http.ErrNoCookie // reusing an error type
+		return "", ErrInvalidToken
 	}
 	return "user-" + token[:minLen(len(token), 8)], nil
 }

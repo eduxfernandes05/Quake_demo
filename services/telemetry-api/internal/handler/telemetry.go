@@ -34,6 +34,9 @@ func (h *TelemetryHandler) IngestEvent(w http.ResponseWriter, r *http.Request) {
 	// Propagate W3C trace context if present
 	traceParent := r.Header.Get("traceparent")
 	if traceParent != "" && evt.TraceID == "" {
+		if evt.Properties == nil {
+			evt.Properties = make(map[string]string)
+		}
 		evt.Properties["traceparent"] = traceParent
 	}
 

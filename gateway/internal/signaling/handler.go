@@ -72,7 +72,10 @@ func (h *Handler) handlePost(w http.ResponseWriter, r *http.Request) {
 		h.mu.Lock()
 		h.nextID++
 		peerID := peerIDString(h.nextID)
+		h.peers[peerID] = nil // reserve slot
+		h.mu.Unlock()
 		pc := rtc.NewPeerConnection(peerID, h.workerCl)
+		h.mu.Lock()
 		h.peers[peerID] = pc
 		h.mu.Unlock()
 
