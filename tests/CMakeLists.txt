@@ -19,13 +19,11 @@ set_tests_properties(smoke_quake_dedicated_exists PROPERTIES
     REQUIRED_FILES "$<TARGET_FILE:quake-dedicated>"
 )
 
-# Test 3: qwsv responds to --help / prints version (exits with error since no game data, but doesn't crash)
+# Test 3: qwsv starts, initializes and shuts down cleanly
 add_test(NAME smoke_qwsv_runs
-    COMMAND ${CMAKE_COMMAND} -E env "HOME=/tmp" $<TARGET_FILE:qwsv>  -basedir /tmp -game nonexistent +quit
+    COMMAND ${CMAKE_COMMAND} -E env "HOME=/tmp" $<TARGET_FILE:qwsv> -basedir /tmp -game nonexistent +quit
 )
-# The server will exit with an error because there's no game data, but it should at least start
 set_tests_properties(smoke_qwsv_runs PROPERTIES
-    WILL_FAIL TRUE
     TIMEOUT 5
 )
 
