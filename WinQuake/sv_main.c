@@ -59,7 +59,7 @@ void SV_Init (void)
 	Cvar_RegisterVariable (&sv_nostep);
 
 	for (i=0 ; i<MAX_MODELS ; i++)
-		sprintf (localmodels[i], "*%i", i);
+		snprintf(localmodels[i], sizeof(localmodels[i]), "*%i", i);
 }
 
 /*
@@ -192,7 +192,7 @@ void SV_SendServerinfo (client_t *client)
 	char			message[2048];
 
 	MSG_WriteByte (&client->message, svc_print);
-	sprintf (message, "%c\nVERSION %4.2f SERVER (%i CRC)", 2, VERSION, pr_crc);
+	snprintf(message, sizeof(message), "%c\nVERSION %4.2f SERVER (%i CRC)", 2, VERSION, pr_crc);
 	MSG_WriteString (&client->message,message);
 
 	MSG_WriteByte (&client->message, svc_serverinfo);
@@ -204,7 +204,7 @@ void SV_SendServerinfo (client_t *client)
 	else
 		MSG_WriteByte (&client->message, GAME_COOP);
 
-	sprintf (message, pr_strings+sv.edicts->v.message);
+	snprintf(message, sizeof(message), "%s", pr_strings+sv.edicts->v.message);
 
 	MSG_WriteString (&client->message,message);
 
@@ -265,7 +265,7 @@ void SV_ConnectClient (int clientnum)
 	memset (client, 0, sizeof(*client));
 	client->netconnection = netconnection;
 
-	strcpy (client->name, "unconnected");
+	Q_strncpy(client->name, "unconnected", sizeof(client->name) - 1);
 	client->active = true;
 	client->spawned = false;
 	client->edict = ent;
@@ -1086,10 +1086,10 @@ void SV_SpawnServer (char *server)
 
 	memset (&sv, 0, sizeof(sv));
 
-	strcpy (sv.name, server);
+	Q_strncpy(sv.name, server, sizeof(sv.name) - 1);
 #ifdef QUAKE2
 	if (startspot)
-		strcpy(sv.startspot, startspot);
+		Q_strncpy(sv.startspot, startspot, sizeof(sv.startspot) - 1);
 #endif
 
 // load progs to get entity field count
@@ -1125,8 +1125,8 @@ void SV_SpawnServer (char *server)
 
 	sv.time = 1.0;
 	
-	strcpy (sv.name, server);
-	sprintf (sv.modelname,"maps/%s.bsp", server);
+	Q_strncpy(sv.name, server, sizeof(sv.name) - 1);
+	snprintf(sv.modelname, sizeof(sv.modelname),"maps/%s.bsp", server);
 	sv.worldmodel = Mod_ForName (sv.modelname, false);
 	if (!sv.worldmodel)
 	{

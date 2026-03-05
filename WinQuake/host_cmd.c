@@ -272,13 +272,13 @@ void Host_Map_f (void)
 	cls.mapstring[0] = 0;
 	for (i=0 ; i<Cmd_Argc() ; i++)
 	{
-		strcat (cls.mapstring, Cmd_Argv(i));
-		strcat (cls.mapstring, " ");
+		strncat(cls.mapstring, Cmd_Argv(i), sizeof(cls.mapstring) - strlen(cls.mapstring) - 1);
+		strncat(cls.mapstring, " ", sizeof(cls.mapstring) - strlen(cls.mapstring) - 1);
 	}
-	strcat (cls.mapstring, "\n");
+	strncat(cls.mapstring, "\n", sizeof(cls.mapstring) - strlen(cls.mapstring) - 1);
 
 	svs.serverflags = 0;			// haven't completed an episode yet
-	strcpy (name, Cmd_Argv(1));
+	Q_strncpy(name, Cmd_Argv(1), sizeof(name) - 1);
 #ifdef QUAKE2
 	SV_SpawnServer (name, NULL);
 #else
@@ -289,12 +289,12 @@ void Host_Map_f (void)
 	
 	if (cls.state != ca_dedicated)
 	{
-		strcpy (cls.spawnparms, "");
+		Q_strncpy(cls.spawnparms, "", sizeof(cls.spawnparms) - 1);
 
 		for (i=2 ; i<Cmd_Argc() ; i++)
 		{
-			strcat (cls.spawnparms, Cmd_Argv(i));
-			strcat (cls.spawnparms, " ");
+			strncat(cls.spawnparms, Cmd_Argv(i), sizeof(cls.spawnparms) - strlen(cls.spawnparms) - 1);
+			strncat(cls.spawnparms, " ", sizeof(cls.spawnparms) - strlen(cls.spawnparms) - 1);
 		}
 		
 		Cmd_ExecuteString ("connect local", src_command);
@@ -326,12 +326,12 @@ void Host_Changelevel_f (void)
 		return;
 	}
 
-	strcpy (level, Cmd_Argv(1));
+	Q_strncpy(level, Cmd_Argv(1), sizeof(level) - 1);
 	if (Cmd_Argc() == 2)
 		startspot = NULL;
 	else
 	{
-		strcpy (_startspot, Cmd_Argv(2));
+		Q_strncpy(_startspot, Cmd_Argv(2), sizeof(_startspot) - 1);
 		startspot = _startspot;
 	}
 
@@ -351,7 +351,7 @@ void Host_Changelevel_f (void)
 		return;
 	}
 	SV_SaveSpawnparms ();
-	strcpy (level, Cmd_Argv(1));
+	Q_strncpy(level, Cmd_Argv(1), sizeof(level) - 1);
 	SV_SpawnServer (level);
 #endif
 }
@@ -375,10 +375,10 @@ void Host_Restart_f (void)
 
 	if (cmd_source != src_command)
 		return;
-	strcpy (mapname, sv.name);	// must copy out, because it gets cleared
+	Q_strncpy(mapname, sv.name, sizeof(mapname) - 1);	// must copy out, because it gets cleared
 								// in sv_spawnserver
 #ifdef QUAKE2
-	strcpy(startspot, sv.startspot);
+	Q_strncpy(startspot, sv.startspot, sizeof(startspot) - 1);
 	SV_SpawnServer (mapname, startspot);
 #else
 	SV_SpawnServer (mapname);
@@ -416,7 +416,7 @@ void Host_Connect_f (void)
 		CL_StopPlayback ();
 		CL_Disconnect ();
 	}
-	strcpy (name, Cmd_Argv(1));
+	Q_strncpy(name, Cmd_Argv(1), sizeof(name) - 1);
 	CL_EstablishConnection (name);
 	Host_Reconnect_f ();
 }
@@ -447,7 +447,7 @@ void Host_SavegameComment (char *text)
 	for (i=0 ; i<SAVEGAME_COMMENT_LENGTH ; i++)
 		text[i] = ' ';
 	memcpy (text, cl.levelname, strlen(cl.levelname));
-	sprintf (kills,"kills:%3i/%3i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
+	snprintf(kills, sizeof(kills),"kills:%3i/%3i", cl.stats[STAT_MONSTERS], cl.stats[STAT_TOTALMONSTERS]);
 	memcpy (text+22, kills, strlen(kills));
 // convert space to _ to make stdio happy
 	for (i=0 ; i<SAVEGAME_COMMENT_LENGTH ; i++)
@@ -511,7 +511,7 @@ void Host_Savegame_f (void)
 		}
 	}
 
-	sprintf (name, "%s/%s", com_gamedir, Cmd_Argv(1));
+	snprintf(name, sizeof(name), "%s/%s", com_gamedir, Cmd_Argv(1));
 	COM_DefaultExtension (name, ".sav");
 	
 	Con_Printf ("Saving game to %s...\n", name);
@@ -582,7 +582,7 @@ void Host_Loadgame_f (void)
 
 	cls.demonum = -1;		// stop demo loop in case this fails
 
-	sprintf (name, "%s/%s", com_gamedir, Cmd_Argv(1));
+	snprintf(name, sizeof(name), "%s/%s", com_gamedir, Cmd_Argv(1));
 	COM_DefaultExtension (name, ".sav");
 	
 // we can't call SCR_BeginLoadingPlaque, because too much stack space has
@@ -642,7 +642,7 @@ void Host_Loadgame_f (void)
 	{
 		fscanf (f, "%s\n", str);
 		sv.lightstyles[i] = Hunk_Alloc (strlen(str)+1);
-		strcpy (sv.lightstyles[i], str);
+		Q_strncpy(sv.lightstyles[i], str, sizeof(sv.lightstyles[i]) - 1);
 	}
 
 // load the edicts out of the savegame file
@@ -715,7 +715,7 @@ void SaveGamestate()
 	char	comment[SAVEGAME_COMMENT_LENGTH+1];
 	edict_t	*ent;
 
-	sprintf (name, "%s/%s.gip", com_gamedir, sv.name);
+	snprintf(name, sizeof(name), "%s/%s.gip", com_gamedir, sv.name);
 	
 	Con_Printf ("Saving game to %s...\n", name);
 	f = fopen (name, "w");
@@ -771,7 +771,7 @@ int LoadGamestate(char *level, char *startspot)
 	int		version;
 //	float	spawn_parms[NUM_SPAWN_PARMS];
 
-	sprintf (name, "%s/%s.gip", com_gamedir, level);
+	snprintf(name, sizeof(name), "%s/%s.gip", com_gamedir, level);
 	
 	Con_Printf ("Loading game from %s...\n", name);
 	f = fopen (name, "r");
@@ -810,7 +810,7 @@ int LoadGamestate(char *level, char *startspot)
 	{
 		fscanf (f, "%s\n", str);
 		sv.lightstyles[i] = Hunk_Alloc (strlen(str)+1);
-		strcpy (sv.lightstyles[i], str);
+		Q_strncpy(sv.lightstyles[i], str, sizeof(sv.lightstyles[i]) - 1);
 	}
 
 // load the edicts out of the savegame file
@@ -879,12 +879,12 @@ void Host_Changelevel2_f (void)
 		return;
 	}
 
-	strcpy (level, Cmd_Argv(1));
+	Q_strncpy(level, Cmd_Argv(1), sizeof(level) - 1);
 	if (Cmd_Argc() == 2)
 		startspot = NULL;
 	else
 	{
-		strcpy (_startspot, Cmd_Argv(2));
+		Q_strncpy(_startspot, Cmd_Argv(2), sizeof(_startspot) - 1);
 		startspot = _startspot;
 	}
 
@@ -1043,16 +1043,16 @@ void Host_Say(qboolean teamonly)
 
 // turn on color set 1
 	if (!fromServer)
-		sprintf (text, "%c%s: ", 1, save->name);
+		snprintf(text, sizeof(text), "%c%s: ", 1, save->name);
 	else
-		sprintf (text, "%c<%s> ", 1, hostname.string);
+		snprintf(text, sizeof(text), "%c<%s> ", 1, hostname.string);
 
 	j = sizeof(text) - 2 - Q_strlen(text);  // -2 for /n and null terminator
 	if (Q_strlen(p) > j)
 		p[j] = 0;
 
-	strcat (text, p);
-	strcat (text, "\n");
+	strncat(text, p, sizeof(text) - strlen(text) - 1);
+	strncat(text, "\n", sizeof(text) - strlen(text) - 1);
 
 	for (j = 0, client = svs.clients; j < svs.maxclients; j++, client++)
 	{
@@ -1115,8 +1115,8 @@ void Host_Tell_f(void)
 	if (Q_strlen(p) > j)
 		p[j] = 0;
 
-	strcat (text, p);
-	strcat (text, "\n");
+	strncat(text, p, sizeof(text) - strlen(text) - 1);
+	strncat(text, "\n", sizeof(text) - strlen(text) - 1);
 
 	save = host_client;
 	for (j = 0, client = svs.clients; j < svs.maxclients; j++, client++)

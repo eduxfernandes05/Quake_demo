@@ -967,7 +967,7 @@ void COM_FileBase (char *in, char *out)
 	;
 	
 	if (s-s2 < 2)
-		strcpy (out,"?model?");
+		Q_strncpy(out, "?model?", sizeof(out) - 1);
 	else
 	{
 		s--;
@@ -998,7 +998,7 @@ void COM_DefaultExtension (char *path, char *extension)
 		src--;
 	}
 
-	strcat (path, extension);
+	strncat(path, extension, sizeof(path) - strlen(path) - 1);
 }
 
 //============================================================================
@@ -1389,7 +1389,7 @@ void COM_WriteFile (char *filename, void *data, int len)
 	FILE	*f;
 	char	name[MAX_OSPATH];
 	
-	sprintf (name, "%s/%s", com_gamedir, filename);
+	snprintf(name, sizeof(name), "%s/%s", com_gamedir, filename);
 	
 	f = fopen (name, "wb");
 	if (!f) {
@@ -1516,7 +1516,7 @@ int COM_FOpenFile (char *filename, FILE **file)
 					continue;
 			}
 			
-			sprintf (netpath, "%s/%s",search->filename, filename);
+			snprintf(netpath, sizeof(netpath), "%s/%s",search->filename, filename);
 			
 			findtime = Sys_FileTime (netpath);
 			if (findtime == -1)
@@ -1683,13 +1683,13 @@ pack_t *COM_LoadPackFile (char *packfile)
 // parse the directory
 	for (i=0 ; i<numpackfiles ; i++)
 	{
-		strcpy (newfiles[i].name, info[i].name);
+		Q_strncpy(newfiles[i].name, info[i].name, sizeof(newfiles[i].name) - 1);
 		newfiles[i].filepos = LittleLong(info[i].filepos);
 		newfiles[i].filelen = LittleLong(info[i].filelen);
 	}
 
 	pack = Z_Malloc (sizeof (pack_t));
-	strcpy (pack->filename, packfile);
+	Q_strncpy(pack->filename, packfile, sizeof(pack->filename) - 1);
 	pack->handle = packhandle;
 	pack->numfiles = numpackfiles;
 	pack->files = newfiles;
@@ -1716,16 +1716,16 @@ void COM_AddGameDirectory (char *dir)
 	char			*p;
 
 	if ((p = strrchr(dir, '/')) != NULL)
-		strcpy(gamedirfile, ++p);
+		Q_strncpy(gamedirfile, ++p, sizeof(gamedirfile) - 1);
 	else
-		strcpy(gamedirfile, p);
-	strcpy (com_gamedir, dir);
+		Q_strncpy(gamedirfile, p, sizeof(gamedirfile) - 1);
+	Q_strncpy(com_gamedir, dir, sizeof(com_gamedir) - 1);
 
 //
 // add the directory to the search path
 //
 	search = Hunk_Alloc (sizeof(searchpath_t));
-	strcpy (search->filename, dir);
+	Q_strncpy(search->filename, dir, sizeof(search->filename) - 1);
 	search->next = com_searchpaths;
 	com_searchpaths = search;
 
@@ -1734,7 +1734,7 @@ void COM_AddGameDirectory (char *dir)
 //
 	for (i=0 ; ; i++)
 	{
-		sprintf (pakfile, "%s/pak%i.pak", dir, i);
+		snprintf(pakfile, sizeof(pakfile), "%s/pak%i.pak", dir, i);
 		pak = COM_LoadPackFile (pakfile);
 		if (!pak)
 			break;
@@ -1769,7 +1769,7 @@ void COM_Gamedir (char *dir)
 
 	if (!strcmp(gamedirfile, dir))
 		return;		// still the same
-	strcpy (gamedirfile, dir);
+	Q_strncpy(gamedirfile, dir, sizeof(gamedirfile) - 1);
 
 	//
 	// free up any current game dir info
@@ -1795,13 +1795,13 @@ void COM_Gamedir (char *dir)
 	if (!strcmp(dir,"id1") || !strcmp(dir, "qw"))
 		return;
 
-	sprintf (com_gamedir, "%s/%s", com_basedir, dir);
+	snprintf(com_gamedir, sizeof(com_gamedir), "%s/%s", com_basedir, dir);
 
 	//
 	// add the directory to the search path
 	//
 	search = Z_Malloc (sizeof(searchpath_t));
-	strcpy (search->filename, com_gamedir);
+	Q_strncpy(search->filename, com_gamedir, sizeof(search->filename) - 1);
 	search->next = com_searchpaths;
 	com_searchpaths = search;
 
@@ -1810,7 +1810,7 @@ void COM_Gamedir (char *dir)
 	//
 	for (i=0 ; ; i++)
 	{
-		sprintf (pakfile, "%s/pak%i.pak", com_gamedir, i);
+		snprintf(pakfile, sizeof(pakfile), "%s/pak%i.pak", com_gamedir, i);
 		pak = COM_LoadPackFile (pakfile);
 		if (!pak)
 			break;
@@ -1836,9 +1836,9 @@ void COM_InitFilesystem (void)
 //
 	i = COM_CheckParm ("-basedir");
 	if (i && i < com_argc-1)
-		strcpy (com_basedir, com_argv[i+1]);
+		Q_strncpy(com_basedir, com_argv[i+1], sizeof(com_basedir) - 1);
 	else
-		strcpy (com_basedir, host_parms.basedir);
+		Q_strncpy(com_basedir, host_parms.basedir, sizeof(com_basedir) - 1);
 
 //
 // start up with id1 by default
@@ -1949,7 +1949,7 @@ void Info_RemoveKey (char *s, char *key)
 
 		if (!strcmp (key, pkey) )
 		{
-			strcpy (start, s);	// remove this part
+			Q_strncpy(start, s, sizeof(start) - 1);	// remove this part
 			return;
 		}
 
@@ -2043,7 +2043,7 @@ void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize)
 	if (!value || !strlen(value))
 		return;
 
-	sprintf (new, "\\%s\\%s", key, value);
+	snprintf(new, sizeof(new), "\\%s\\%s", key, value);
 
 	if ((int)(strlen(new) + strlen(s)) > maxsize)
 	{

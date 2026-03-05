@@ -117,7 +117,7 @@ void Con_Printf (char *fmt, ...)
 	{
 		if (strlen (msg) + strlen(outputbuf) > sizeof(outputbuf) - 1)
 			SV_FlushRedirect ();
-		strcat (outputbuf, msg);
+		strncat(outputbuf, msg, sizeof(outputbuf) - strlen(outputbuf) - 1);
 		return;
 	}
 

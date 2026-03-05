@@ -258,7 +258,7 @@ eval_t *GetEdictFieldValue(edict_t *ed, char *field)
 	if (strlen(field) < MAX_FIELD_LEN)
 	{
 		gefvCache[rep].pcache = def;
-		strcpy (gefvCache[rep].field, field);
+		Q_strncpy(gefvCache[rep].field, field, sizeof(gefvCache[rep].field) - 1);
 		rep ^= 1;
 	}
 
@@ -288,33 +288,33 @@ char *PR_ValueString (etype_t type, eval_t *val)
 	switch (type)
 	{
 	case ev_string:
-		sprintf (line, "%s", pr_strings + val->string);
+		snprintf(line, sizeof(line), "%s", pr_strings + val->string);
 		break;
 	case ev_entity:	
-		sprintf (line, "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
+		snprintf(line, sizeof(line), "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
 		break;
 	case ev_function:
 		f = pr_functions + val->function;
-		sprintf (line, "%s()", pr_strings + f->s_name);
+		snprintf(line, sizeof(line), "%s()", pr_strings + f->s_name);
 		break;
 	case ev_field:
 		def = ED_FieldAtOfs ( val->_int );
-		sprintf (line, ".%s", pr_strings + def->s_name);
+		snprintf(line, sizeof(line), ".%s", pr_strings + def->s_name);
 		break;
 	case ev_void:
-		sprintf (line, "void");
+		snprintf(line, sizeof(line), "void");
 		break;
 	case ev_float:
-		sprintf (line, "%5.1f", val->_float);
+		snprintf(line, sizeof(line), "%5.1f", val->_float);
 		break;
 	case ev_vector:
-		sprintf (line, "'%5.1f %5.1f %5.1f'", val->vector[0], val->vector[1], val->vector[2]);
+		snprintf(line, sizeof(line), "'%5.1f %5.1f %5.1f'", val->vector[0], val->vector[1], val->vector[2]);
 		break;
 	case ev_pointer:
-		sprintf (line, "pointer");
+		snprintf(line, sizeof(line), "pointer");
 		break;
 	default:
-		sprintf (line, "bad type %i", type);
+		snprintf(line, sizeof(line), "bad type %i", type);
 		break;
 	}
 	
@@ -340,30 +340,30 @@ char *PR_UglyValueString (etype_t type, eval_t *val)
 	switch (type)
 	{
 	case ev_string:
-		sprintf (line, "%s", pr_strings + val->string);
+		snprintf(line, sizeof(line), "%s", pr_strings + val->string);
 		break;
 	case ev_entity:	
-		sprintf (line, "%i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
+		snprintf(line, sizeof(line), "%i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
 		break;
 	case ev_function:
 		f = pr_functions + val->function;
-		sprintf (line, "%s", pr_strings + f->s_name);
+		snprintf(line, sizeof(line), "%s", pr_strings + f->s_name);
 		break;
 	case ev_field:
 		def = ED_FieldAtOfs ( val->_int );
-		sprintf (line, "%s", pr_strings + def->s_name);
+		snprintf(line, sizeof(line), "%s", pr_strings + def->s_name);
 		break;
 	case ev_void:
-		sprintf (line, "void");
+		snprintf(line, sizeof(line), "void");
 		break;
 	case ev_float:
-		sprintf (line, "%f", val->_float);
+		snprintf(line, sizeof(line), "%f", val->_float);
 		break;
 	case ev_vector:
-		sprintf (line, "%f %f %f", val->vector[0], val->vector[1], val->vector[2]);
+		snprintf(line, sizeof(line), "%f %f %f", val->vector[0], val->vector[1], val->vector[2]);
 		break;
 	default:
-		sprintf (line, "bad type %i", type);
+		snprintf(line, sizeof(line), "bad type %i", type);
 		break;
 	}
 	
@@ -389,17 +389,17 @@ char *PR_GlobalString (int ofs)
 	val = (void *)&pr_globals[ofs];
 	def = ED_GlobalAtOfs(ofs);
 	if (!def)
-		sprintf (line,"%i(???)", ofs);
+		snprintf(line, sizeof(line),"%i(???)", ofs);
 	else
 	{
 		s = PR_ValueString (def->type, val);
-		sprintf (line,"%i(%s)%s", ofs, pr_strings + def->s_name, s);
+		snprintf(line, sizeof(line),"%i(%s)%s", ofs, pr_strings + def->s_name, s);
 	}
 	
 	i = strlen(line);
 	for ( ; i<20 ; i++)
-		strcat (line," ");
-	strcat (line," ");
+		strncat(line, " ", sizeof(line) - strlen(line) - 1);
+	strncat(line, " ", sizeof(line) - strlen(line) - 1);
 		
 	return line;
 }
@@ -412,14 +412,14 @@ char *PR_GlobalStringNoContents (int ofs)
 	
 	def = ED_GlobalAtOfs(ofs);
 	if (!def)
-		sprintf (line,"%i(???)", ofs);
+		snprintf(line, sizeof(line),"%i(???)", ofs);
 	else
-		sprintf (line,"%i(%s)", ofs, pr_strings + def->s_name);
+		snprintf(line, sizeof(line),"%i(%s)", ofs, pr_strings + def->s_name);
 	
 	i = strlen(line);
 	for ( ; i<20 ; i++)
-		strcat (line," ");
-	strcat (line," ");
+		strncat(line, " ", sizeof(line) - strlen(line) - 1);
+	strncat(line, " ", sizeof(line) - strlen(line) - 1);
 		
 	return line;
 }
@@ -660,7 +660,7 @@ void ED_ParseGlobals (char *data)
 		if (!data)
 			Sys_Error ("ED_ParseEntity: EOF without closing brace");
 
-		strcpy (keyname, com_token);
+		Q_strncpy(keyname, com_token, sizeof(keyname) - 1);
 
 	// parse value	
 		data = COM_Parse (data);
@@ -747,7 +747,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 		break;
 		
 	case ev_vector:
-		strcpy (string, s);
+		Q_strncpy(string, s, sizeof(string) - 1);
 		v = string;
 		w = string;
 		for (i=0 ; i<3 ; i++)
@@ -827,7 +827,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 // and allow them to be turned into vectors. (FIXME...)
 if (!strcmp(com_token, "angle"))
 {
-	strcpy (com_token, "angles");
+	Q_strncpy(com_token, "angles", sizeof(com_token) - 1);
 	anglehack = true;
 }
 else
@@ -835,9 +835,9 @@ else
 
 // FIXME: change light to _light to get rid of this hack
 if (!strcmp(com_token, "light"))
-	strcpy (com_token, "light_lev");	// hack for single light def
+	Q_strncpy(com_token, "light_lev", sizeof(com_token) - 1);	// hack for single light def
 
-		strcpy (keyname, com_token);
+		Q_strncpy(keyname, com_token, sizeof(keyname) - 1);
 
 		// another hack to fix heynames with trailing spaces
 		n = strlen(keyname);
@@ -872,8 +872,8 @@ if (!strcmp(com_token, "light"))
 if (anglehack)
 {
 char	temp[32];
-strcpy (temp, com_token);
-sprintf (com_token, "0 %s 0", temp);
+Q_strncpy(temp, com_token, sizeof(temp) - 1);
+snprintf(com_token, sizeof(com_token), "0 %s 0", temp);
 }
 
 		if (!ED_ParseEpair ((void *)&ent->v, key, com_token))

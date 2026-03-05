@@ -182,7 +182,7 @@ static int PartialIPAddress (char *in, struct qsockaddr *hostaddr)
 	
 	buff[0] = '.';
 	b = buff;
-	strcpy(buff+1, in);
+	Q_strncpy(buff+1, in, sizeof(buff) - 2);
 	if (buff[1] == '.')
 		b++;
 
@@ -309,7 +309,7 @@ char *UDP_AddrToString (struct qsockaddr *addr)
 	int haddr;
 
 	haddr = ntohl(((struct sockaddr_in *)addr)->sin_addr.s_addr);
-	sprintf(buffer, "%d.%d.%d.%d:%d", (haddr >> 24) & 0xff, (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff, ntohs(((struct sockaddr_in *)addr)->sin_port));
+	snprintf(buffer, sizeof(buffer), "%d.%d.%d.%d:%d", (haddr >> 24) & 0xff, (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff, ntohs(((struct sockaddr_in *)addr)->sin_port));
 	return buffer;
 }
 

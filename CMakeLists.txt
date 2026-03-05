@@ -34,6 +34,16 @@ elseif(MSVC)
     add_compile_options(/W3 /wd4244 /wd4127 /wd4201 /wd4214 /wd4514 /wd4305 /wd4115 /wd4018)
 endif()
 
+# Exclude x86 inline assembly — use portable C fallbacks
+add_compile_definitions(NOASM)
+
+# Optional AddressSanitizer support
+option(SANITIZE_ADDRESS "Build with AddressSanitizer" OFF)
+if(SANITIZE_ADDRESS)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+endif()
+
 # Build targets
 add_subdirectory(QW)
 add_subdirectory(WinQuake)

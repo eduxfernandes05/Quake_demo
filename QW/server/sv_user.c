@@ -739,11 +739,11 @@ void SV_Say (qboolean team)
 	}
 
 	if (host_client->spectator && (!sv_spectalk.value || team))
-		sprintf (text, "[SPEC] %s: ", host_client->name);
+		snprintf(text, sizeof(text), "[SPEC] %s: ", host_client->name);
 	else if (team)
-		sprintf (text, "(%s): ", host_client->name);
+		snprintf(text, sizeof(text), "(%s): ", host_client->name);
 	else {
-		sprintf (text, "%s: ", host_client->name);
+		snprintf(text, sizeof(text), "%s: ", host_client->name);
 	}
 
 	if (fp_messages) {
@@ -929,9 +929,9 @@ void SV_Pause_f (void)
 	}
 
 	if (sv.paused)
-		sprintf (st, "%s paused the game\n", host_client->name);
+		snprintf(st, sizeof(st), "%s paused the game\n", host_client->name);
 	else
-		sprintf (st, "%s unpaused the game\n", host_client->name);
+		snprintf(st, sizeof(st), "%s unpaused the game\n", host_client->name);
 
 	SV_TogglePause(st);
 }
@@ -1074,7 +1074,7 @@ void SV_SetInfo_f (void)
 	if (Cmd_Argv(1)[0] == '*')
 		return;		// don't set priveledged values
 
-	strcpy(oldval, Info_ValueForKey(host_client->userinfo, Cmd_Argv(1)));
+	Q_strncpy(oldval, Info_ValueForKey(host_client->userinfo, Cmd_Argv(1)), sizeof(oldval) - 1);
 
 	Info_SetValueForKey (host_client->userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
 // name is extracted below in ExtractFromUserInfo

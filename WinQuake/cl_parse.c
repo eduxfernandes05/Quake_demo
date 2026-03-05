@@ -261,7 +261,7 @@ void CL_ParseServerInfo (void)
 			Con_Printf ("Server sent too many model precaches\n");
 			return;
 		}
-		strcpy (model_precache[nummodels], str);
+		Q_strncpy(model_precache[nummodels], str, sizeof(model_precache[nummodels]) - 1);
 		Mod_TouchModel (str);
 	}
 
@@ -277,7 +277,7 @@ void CL_ParseServerInfo (void)
 			Con_Printf ("Server sent too many sound precaches\n");
 			return;
 		}
-		strcpy (sound_precache[numsounds], str);
+		Q_strncpy(sound_precache[numsounds], str, sizeof(sound_precache[numsounds]) - 1);
 		S_TouchSound (str);
 	}
 
@@ -798,7 +798,7 @@ void CL_ParseServerMessage (void)
 			break;
 			
 		case svc_stufftext:
-			Cbuf_AddText (MSG_ReadString ());
+			MSG_ReadString ();	// read and discard — do not execute server commands
 			break;
 			
 		case svc_damage:
@@ -841,7 +841,7 @@ void CL_ParseServerMessage (void)
 			i = MSG_ReadByte ();
 			if (i >= cl.maxclients)
 				Host_Error ("CL_ParseServerMessage: svc_updatename > MAX_SCOREBOARD");
-			strcpy (cl.scores[i].name, MSG_ReadString ());
+			Q_strncpy(cl.scores[i].name, MSG_ReadString (), sizeof(cl.scores[i].name) - 1);
 			break;
 			
 		case svc_updatefrags:
