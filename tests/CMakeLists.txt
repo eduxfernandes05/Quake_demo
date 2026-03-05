@@ -35,3 +35,13 @@ set_tests_properties(smoke_quake_dedicated_runs PROPERTIES
     WILL_FAIL TRUE
     TIMEOUT 5
 )
+
+# Test 5: When HEADLESS=ON, verify the headless binary links EGL/GL/GBM
+if(HEADLESS)
+    add_test(NAME smoke_headless_links_egl
+        COMMAND sh -c "ldd $<TARGET_FILE:quake-dedicated> | grep -q libEGL"
+    )
+    set_tests_properties(smoke_headless_links_egl PROPERTIES
+        TIMEOUT 5
+    )
+endif()

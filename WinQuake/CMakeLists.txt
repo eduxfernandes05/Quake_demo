@@ -84,9 +84,8 @@ set(QUAKE_CORE_SOURCES
     net_udp.c
     net_vcr.c
 
-    # Input, video, sound, CD — null stubs
+    # Input, sound, CD — null stubs
     in_null.c
-    vid_null.c
     snd_null.c
     cd_null.c
 
@@ -98,12 +97,26 @@ set(QUAKE_CORE_SOURCES
     nonintel.c
 )
 
+# --------------------------------------------------------------------------
+# Headless video driver option
+# When ON, use vid_headless.c (EGL + LLVMpipe off-screen rendering)
+# When OFF, use vid_null.c (stub — no rendering)
+# --------------------------------------------------------------------------
+option(HEADLESS "Build with headless EGL video driver for frame capture" OFF)
+
+if(HEADLESS)
+    set(VID_SOURCE vid_headless.c)
+else()
+    set(VID_SOURCE vid_null.c)
+endif()
+
 set(QUAKE_PLATFORM_SOURCES
     sys_linux.c
 )
 
 add_executable(quake-dedicated
     ${QUAKE_CORE_SOURCES}
+    ${VID_SOURCE}
     ${QUAKE_PLATFORM_SOURCES}
 )
 
@@ -125,6 +138,18 @@ target_include_directories(quake-dedicated PRIVATE
 )
 
 target_link_libraries(quake-dedicated PRIVATE m)
+
+# Headless mode requires EGL, GL, and GBM for off-screen rendering
+if(HEADLESS)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(EGL REQUIRED IMPORTED_TARGET egl)
+    pkg_check_modules(GBM REQUIRED IMPORTED_TARGET gbm)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(quake-dedicated PRIVATE
+        OpenGL::GL PkgConfig::EGL PkgConfig::GBM
+    )
+    target_compile_definitions(quake-dedicated PRIVATE HEADLESS)
+endif()
 
 # Installation
 install(TARGETS quake-dedicated RUNTIME DESTINATION bin)
