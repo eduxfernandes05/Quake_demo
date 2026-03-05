@@ -147,7 +147,11 @@ static qboolean VID_InitEGL (void)
 	/* Try GBM render node first */
 	gbm_fd = open("/dev/dri/renderD128", O_RDWR);
 	if (gbm_fd < 0)
+	{
+		Con_Printf("VID_InitEGL: /dev/dri/renderD128 unavailable, "
+			   "trying card0\n");
 		gbm_fd = open("/dev/dri/card0", O_RDWR);
+	}
 
 	if (gbm_fd >= 0)
 	{
@@ -202,10 +206,7 @@ static qboolean VID_InitEGL (void)
 	}
 
 	if (!eglMakeCurrent(egl_display,
-			    egl_surface != EGL_NO_SURFACE
-				? egl_surface : EGL_NO_SURFACE,
-			    egl_surface != EGL_NO_SURFACE
-				? egl_surface : EGL_NO_SURFACE,
+			    egl_surface, egl_surface,
 			    egl_context))
 	{
 		Con_Printf("VID_InitEGL: eglMakeCurrent failed\n");
@@ -436,17 +437,13 @@ void VID_Update (vrect_t *rects)
 		dst += 4;
 	}
 
-	/* Upload to FBO texture */
+	/* Upload to FBO texture (exercises the GL path) */
 	qglBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
 	glBindTexture(GL_TEXTURE_2D, fbo_texture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
 			capture_width, capture_height,
 			GL_RGBA, GL_UNSIGNED_BYTE, capture_buffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	/* Read back from FBO into capture buffer */
-	glReadPixels(0, 0, capture_width, capture_height,
-		     GL_RGBA, GL_UNSIGNED_BYTE, capture_buffer);
 
 	glFinish();
 }
