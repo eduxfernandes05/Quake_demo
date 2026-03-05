@@ -84,9 +84,7 @@ set(QUAKE_CORE_SOURCES
     net_udp.c
     net_vcr.c
 
-    # Input, sound, CD — null stubs
-    in_null.c
-    snd_null.c
+    # CD — null stub (always)
     cd_null.c
 
     # Keyboard & menu
@@ -98,16 +96,20 @@ set(QUAKE_CORE_SOURCES
 )
 
 # --------------------------------------------------------------------------
-# Headless video driver option
-# When ON, use vid_headless.c (EGL + LLVMpipe off-screen rendering)
-# When OFF, use vid_null.c (stub — no rendering)
+# Headless driver options
+# When ON:  vid_headless.c + snd_capture.c (DMA) + in_inject.c
+# When OFF: vid_null.c     + snd_null.c          + in_null.c
 # --------------------------------------------------------------------------
 option(HEADLESS "Build with headless EGL video driver for frame capture" OFF)
 
 if(HEADLESS)
     set(VID_SOURCE vid_headless.c)
+    set(SND_SOURCES snd_capture.c snd_dma.c snd_mix.c snd_mem.c)
+    set(IN_SOURCE in_inject.c)
 else()
     set(VID_SOURCE vid_null.c)
+    set(SND_SOURCES snd_null.c)
+    set(IN_SOURCE in_null.c)
 endif()
 
 set(QUAKE_PLATFORM_SOURCES
@@ -117,6 +119,8 @@ set(QUAKE_PLATFORM_SOURCES
 add_executable(quake-dedicated
     ${QUAKE_CORE_SOURCES}
     ${VID_SOURCE}
+    ${SND_SOURCES}
+    ${IN_SOURCE}
     ${QUAKE_PLATFORM_SOURCES}
 )
 
