@@ -106,22 +106,20 @@ if(HEADLESS)
     set(VID_SOURCE vid_headless.c)
     set(SND_SOURCES snd_capture.c snd_dma.c snd_mix.c snd_mem.c)
     set(IN_SOURCE in_inject.c)
+    set(SYS_SOURCE sys_container.c)
 else()
     set(VID_SOURCE vid_null.c)
     set(SND_SOURCES snd_null.c)
     set(IN_SOURCE in_null.c)
+    set(SYS_SOURCE sys_linux.c)
 endif()
-
-set(QUAKE_PLATFORM_SOURCES
-    sys_linux.c
-)
 
 add_executable(quake-dedicated
     ${QUAKE_CORE_SOURCES}
     ${VID_SOURCE}
     ${SND_SOURCES}
     ${IN_SOURCE}
-    ${QUAKE_PLATFORM_SOURCES}
+    ${SYS_SOURCE}
 )
 
 target_compile_definitions(quake-dedicated PRIVATE
@@ -153,7 +151,13 @@ if(HEADLESS)
         OpenGL::GL PkgConfig::EGL PkgConfig::GBM
     )
     target_compile_definitions(quake-dedicated PRIVATE HEADLESS)
+
+    # quake-worker: convenience alias that copies the headless binary
+    add_executable(quake-worker ALIAS quake-dedicated)
 endif()
 
 # Installation
 install(TARGETS quake-dedicated RUNTIME DESTINATION bin)
+if(HEADLESS)
+    install(PROGRAMS $<TARGET_FILE:quake-dedicated> DESTINATION bin RENAME quake-worker)
+endif()
