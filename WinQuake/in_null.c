@@ -37,3 +37,7 @@ void IN_Move (usercmd_t *cmd)
 {
 }
 
+void Sys_SendKeyEvents (void)
+{
+}
+
