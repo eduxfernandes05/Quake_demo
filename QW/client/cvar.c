@@ -160,7 +160,7 @@ void Cvar_SetValue (char *var_name, float value)
 {
 	char	val[32];
 	
-	sprintf (val, "%f",value);
+	snprintf(val, sizeof(val), "%f",value);
 	Cvar_Set (var_name, val);
 }
 
@@ -195,7 +195,7 @@ void Cvar_RegisterVariable (cvar_t *variable)
 	cvar_vars = variable;
 
 // copy the value off, because future sets will Z_Free it
-	strcpy (value, variable->string);
+	Q_strncpy(value, variable->string, sizeof(value) - 1);
 	variable->string = Z_Malloc (1);	
 	
 // set it through the function to be consistant

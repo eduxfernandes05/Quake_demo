@@ -487,8 +487,8 @@ void Key_Bind_f (void)
 	for (i=2 ; i< c ; i++)
 	{
 		if (i > 2)
-			strcat (cmd, " ");
-		strcat (cmd, Cmd_Argv(i));
+			strncat(cmd, " ", sizeof(cmd) - strlen(cmd) - 1);
+		strncat(cmd, Cmd_Argv(i), sizeof(cmd) - strlen(cmd) - 1);
 	}
 
 	Key_SetBinding (b, cmd);
@@ -666,7 +666,7 @@ void Key_Event (int key, qboolean down)
 		kb = keybindings[key];
 		if (kb && kb[0] == '+')
 		{
-			sprintf (cmd, "-%s %i\n", kb+1, key);
+			snprintf(cmd, sizeof(cmd), "-%s %i\n", kb+1, key);
 			Cbuf_AddText (cmd);
 		}
 		if (keyshift[key] != key)
@@ -674,7 +674,7 @@ void Key_Event (int key, qboolean down)
 			kb = keybindings[keyshift[key]];
 			if (kb && kb[0] == '+')
 			{
-				sprintf (cmd, "-%s %i\n", kb+1, key);
+				snprintf(cmd, sizeof(cmd), "-%s %i\n", kb+1, key);
 				Cbuf_AddText (cmd);
 			}
 		}
@@ -702,7 +702,7 @@ void Key_Event (int key, qboolean down)
 		{
 			if (kb[0] == '+')
 			{	// button commands add keynum as a parm
-				sprintf (cmd, "%s %i\n", kb, key);
+				snprintf(cmd, sizeof(cmd), "%s %i\n", kb, key);
 				Cbuf_AddText (cmd);
 			}
 			else
