@@ -177,7 +177,7 @@ void Cbuf_Execute (void)
 		{
 			i++;
 			cmd_text.cursize -= i;
-			Q_memcpy (text, text+i, cmd_text.cursize);
+			memmove (text, text+i, cmd_text.cursize);
 		}
 
 // execute the command line
@@ -334,7 +334,7 @@ char *CopyString (char *in)
 	char	*out;
 	
 	out = Z_Malloc (strlen(in)+1);
-	Q_strncpy(out, in, sizeof(out) - 1);
+	strcpy(out, in);
 	return out;
 }
 
